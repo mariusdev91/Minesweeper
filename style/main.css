@@ -1,10 +1,5 @@
 button {
     width: 70px;
     height: 70px;
-    position:relative;
-    color:aqua;
-}
-button:hover {
-    background-color: #08090a;
-    color: white;
+    border-color: red;
 }
