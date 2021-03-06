@@ -1,29 +1,36 @@
-function grid() {
+/*function that builds the board for the user and
+sets and id for every button*/
+function buidlGrid() {
     const board = document.getElementById('board');
-    for (let i = 1; i <= 9; ++i) {
-        for (let j = 1; j <= 9; ++j) {
+    for (let i = 0; i < 9; ++i) {
+        for (let j = 0; j < 9; ++j) {
             const btn = document.createElement('button');
             btn.className = 'btn btn-outline-secondary';
             btn.style.color = 'blue';
-            btn.style.backgroundColor = 'grey';
-            board.appendChild(btn).setAttribute('id', + i.toString() + j.toString());
+            btn.style.backgroundColor = 'lightgray';
+            if (i == 0) {
+                board.appendChild(btn).setAttribute('id', + j.toString());
+            } else {
+                board.appendChild(btn).setAttribute('id', + i.toString() + j.toString());
+            }
         }
         document.write('<br>');
     }
 }
 
-//set the bombs
-function setBombPosition() {
-    let bombPositions = [];
-    for (let i = 0; i < 10; ++i) {
+/*function that positions the mines on the board*/
+function setMines() {
+    let bombPositions = new Array(10);
+    const max = 88, min = 0;
+    for (let i = 0; i < bombPositions.length; ++i) {
         let possible = true;
         while (possible) {
-            let value = Math.floor(Math.random() * (99 - 11 + 1) + 11);
+            let value = Math.floor(Math.random() * (max - min + 1) + min);
             if (bombPositions.includes(value)) {
                 continue;
             } else {
                 bombPositions[i] = value;
-                possible = false;
+                break;
             }
         }
     }
@@ -32,120 +39,256 @@ function setBombPosition() {
         let btnId = btn.getAttribute('id');
         bombPositions.forEach(function (value) {
             if (btnId === value.toString()) {
-                btn.style.color = 'red';
+                btn.style.color = 'darkred';
             }
         })
-    })
-}
-
-//Function that checks if there is a bomb or not
-function checkForBomb(){
-    const board = document.getElementById('board');
-    board.addEventListener('click', function(e) {
-        const btnId = e.target.style.color;
-        if (btnId === 'red') {
-            alert('You lost!')
-        } else {
-            return btnId;
-        }
     });
 }
 
-function setBombNeighbours() {
-    const buttons = document.querySelectorAll('button');
-    const one = '1';
-    const two = '2';
-    const three = '3';
-    const four = '4';
-    for (let i = 0; i < buttons.length; ++i) {
-        if (buttons[i].style.color === 'red') {
-            //current bomb position
-            const currentPos = Number(buttons[i].id);
-            //top left corner 
-            const tlcn = document.getElementById((currentPos - 11).toString());
-            //upper
-            const un = document.getElementById((currentPos - 10).toString());
-            //top right corner
-            const trcn = document.getElementById((currentPos - 9).toString());
-            //right
-            const rn = document.getElementById((currentPos + 1).toString());
-            //bottom right corner
-            const brcn = document.getElementById((currentPos + 11).toString());
-            //bottom 
-            const bn = document.getElementById((currentPos + 10).toString());
-            //bottom left corner
-            const blcn = document.getElementById((currentPos + 9).toString());
-            //left
-            const ln = document.getElementById((currentPos - 1).toString());
+/*function that creates a local board*/
+function localBoard() {
+    let currentPos;
+    let board = new Array(9);
 
-            //top left corner
-            if (!tlcn && !un && !trcn && !ln && !blcn) {
-                if (rn.style.color === 'blue' && brcn.style.color === 'blue' && bn.style.color === 'blue') {
-                    rn.id = one;
-                    brcn.id = one;
-                    bn.id = one;
-                } else if (rn.style.color === 'red' && brcn.style.color === 'blue' && bn.style.color === 'blue') {
-                    brcn.id = two;
-                    bn.id = two;
-                } else if (rn.style.color === 'blue' && brcn.style.color === 'red' && bn.style.color === 'blue') {
-                    rn.id = two;
-                    bn.id = two;
-                } else if (rn.style.color === 'blue' && brcn.style.color === 'blue' && bn.style.color === 'red') {
-                    rn.id = two;
-                    brcn.id = two;
-                } else if (rn.style.color === 'red' && brcn.style.color === 'blue' && bn.style.color === 'red') {
-                    brcn.id = three;
-                } else if (rn.style.color === 'red' && brcn.style.color === 'red' && bn.style.color === 'blue') {
-                    bn.id = three;
+    for (let i = 0; i < board.length; ++i) {
+        board[i] = new Array(9);
+    }
+    
+    for (let i = 0; i < 9; ++i) {
+        for (let j = 0; j < 9; ++j) {
+            if (i == 0) {
+                currentPos = j.toString();
+            } else {
+                currentPos = i.toString() + j.toString();
+            }
+            if (document.getElementById(currentPos).style.color == 'darkred') {
+                board[i][j] = 0;
+            } else if (document.getElementById(currentPos).style.color == 'blue') {
+                board[i][j] = 1;
+            }
+        }
+    }
+    return board;
+}
+
+/*function to check for mines around our position*/
+function checkForMines(x, y) {
+    let board = localBoard();
+    let nrOfMines = 0, max = 8, min = 0;
+
+    //top neighbor
+    if (x > min) {
+        let top = board[x - 1][y];
+        if (top == 0) {
+            ++nrOfMines;
+        }
+    }
+    //left
+    if (y > min) {
+        let left = board[x][y - 1];
+        if (left == 0) {
+            ++nrOfMines;
+        }
+    }
+    //right
+    if (y < max) {
+        let right = board[x][y + 1];
+        if (right == 0) {
+            ++nrOfMines;
+        }
+    }
+    //topleft
+    if (x > min && y > min) {
+        let topLeftCorner = board[x - 1][y - 1];
+        if (topLeftCorner == 0) {
+            ++nrOfMines;
+        }
+    }
+    //topRight
+    if (x > min && y < max) {
+        let topRightCorner = board[x - 1][y + 1];
+        if (topRightCorner == 0) {
+            ++nrOfMines;
+        }
+    }
+    //bottomLeft
+    if (x < max && y > min) {
+        let bottomLeftCorner = board[x + 1][y - 1];
+        if (bottomLeftCorner == 0) {
+            ++nrOfMines;
+        }
+    }
+    //bottom
+    if (x < max) {
+        let bottom = board[x + 1][y];
+        if (bottom == 0) {
+            ++nrOfMines;
+        }
+    }
+    //bottomRight
+    if (x < max && y < max) {
+        let bottomRight = board[x + 1][y + 1];
+        if (bottomRight == 0) {
+            ++nrOfMines;
+        }
+    }
+        
+    return nrOfMines;
+}
+
+/*function that creates a final local board, updated*/
+function finalBoard() { 
+    let myBoard = localBoard();
+    for (let i = 0; i < 9; ++i) {
+        for (let j = 0; j < 9; ++j) {
+            if (myBoard[i][j] == 1) {
+                if(checkForMines(i, j) != 0) {
+                    myBoard[i][j] = checkForMines(i, j);
+                } else if (checkForMines(i, j) == 0) {
+                    myBoard[i][j] = -1;
                 }
-            } else if (!tlcn && !un && !trcn) {
-                if (ln.style.color === 'blue' && blcn.style.color === 'blue' && bn.style.color === 'blue' && brcn.style.color === 'blue' && rn.style.color === 'blue') {
-                    ln.id = one;
-                    blcn.id = one;
-                    bn.id = one;
-                    brcn.id = one;
-                    rn.id = one;
+           }
+        }
+    }
+    return myBoard;
+}
+
+/*function that updates the html board with the values from our local board*/
+function updateBoard() {
+    let myBoard = finalBoard();
+    let currentPos;
+
+    for (let i = 0; i < 9; ++i) {
+        for (let j = 0; j < 9; ++j) {
+            if (i == 0) {
+                currentPos = j.toString();
+            } else {
+                currentPos = i.toString() + j.toString();
+            }
+            if (myBoard[i][j] >= 1) {
+                if (myBoard[i][j] == 1) {
+                    document.getElementById(currentPos).id = myBoard[i][j].toString();
+                } else if (myBoard[i][j] == 2) {
+                    document.getElementById(currentPos).style.color = 'green';
+                    document.getElementById(currentPos).id = myBoard[i][j].toString();
+                } else if (myBoard[i][j] == 3) {
+                    document.getElementById(currentPos).style.color = 'red';
+                    document.getElementById(currentPos).id = myBoard[i][j].toString();
+                } else if (myBoard[i][j] == 4) {
+                    document.getElementById(currentPos).style.color = 'violet';
+                    document.getElementById(currentPos).id = myBoard[i][j].toString();
+                } else if (myBoard[i][j] == 4) {
+                    document.getElementById(currentPos).style.color = 'violet';
+                    document.getElementById(currentPos).id = myBoard[i][j].toString();
+                } else if (myBoard[i][j] == 5) {
+                    document.getElementById(currentPos).style.color = 'maroon';
+                    document.getElementById(currentPos).id = myBoard[i][j].toString();
+                } else if (myBoard[i][j] == 6) {
+                    document.getElementById(currentPos).style.color = 'lime';
+                    document.getElementById(currentPos).id = myBoard[i][j].toString();
+                } else if (myBoard[i][j] == 7) {
+                    document.getElementById(currentPos).style.color = 'black';
+                    document.getElementById(currentPos).id = myBoard[i][j].toString();
+                } else if (myBoard[i][j] == 8) {
+                    document.getElementById(currentPos).style.color = 'grey';
+                    document.getElementById(currentPos).id = myBoard[i][j].toString();
                 }
+            } else if (myBoard[i][j] == 0) {
+                document.getElementById(currentPos).style.fontWeight = 'bold';
+                document.getElementById(currentPos).style.color = 'darkred'
+                document.getElementById(currentPos).id = 'X';
+            } else if (myBoard[i][j] == -1) {
+                document.getElementById(currentPos).id = ' ';
             }
         }
     }
 }
 
-function returnMineId() {
-    const mine = document.getElementById('board');
-    mine.addEventListener('mouseup', function (e) {
-        let btnId = e.target.getAttribute('id');
+/*function that checks if you clicked on a mine*/
+function checkForBomb() {
+    const board = document.getElementById('board');
+    let buttons = document.querySelectorAll('button');
+    board.addEventListener('click', function (e) {
+        if (e.target.id === 'X') {
+            alert('You lost!');
+            newGame();
+            buttons.forEach(function (value) {
+                if (value.id == 'X') {
+                    value.innerText = value.id;
+                    value.style.backgroundColor = 'white';
+                }
+                value.disabled = true;
+            })
+        }
+    });
+}
+
+/*function that reveals the value inside and updates the score and flags number*/
+function revealInsideValue() {
+    const score = document.getElementById('score');
+    const mines = document.getElementById('board');
+    const flags = document.getElementById('flags');
+    let scoreValue = 0;
+    let flagsNumber = 10;
+    flags.innerText = 'Flags left: ' + flagsNumber;
+    mines.addEventListener('mouseup', function (e) {
         if (typeof e === 'object') {
             if (e.button === 0) {
-                if (e.target.innerText === '') {
-                    e.target.innerText = btnId;
+                if (e.target.innerText === '' && e.target.id != 'X' && e.target.style.backgroundColor == 'lightgray') {
+                    scoreValue += Number(e.target.id);
+                    score.innerText = 'Your score is: ' + scoreValue;
+                    e.target.innerText = e.target.getAttribute('id');
                     e.target.style.backgroundColor = 'white';
-                } else {
-                    e.target.innerText = '';
-                    e.target.style.backgroundColor = 'grey';
-                }
-            } else if (e.button === 2) {
+                } 
+            } else if (e.button === 2 && flagsNumber > 0 && e.target.style.backgroundColor == 'lightgray') {
                 e.target.style.backgroundColor = 'red';
+                e.target.disabled = true;
+                if (flagsNumber > 0) {
+                    --flagsNumber;
+                }
+                flags.innerText = 'Flags left: ' + flagsNumber;
             }
         }
     });
-    mine.addEventListener('contextmenu', function (e) {
+    mines.addEventListener('contextmenu', function(e) {
         e.preventDefault();
     });
 }
 
-function startGame() {
-    const score = document.getElementById('score');
-    const life = document.getElementById('life');
-    const buttons = document.querySelectorAll('button');
-    let scoreValue = 1;
-    ++scoreValue;
-    score.innerText += ' ' + scoreValue;
-    life.innerText += ' ' + 1;
-    returnMineId();
-    grid();
-    setBombPosition();
-    checkForBomb();
-    setBombNeighbours();
+//function that creates the possibility to play another game
+function newGame() {
+    const divElementFirst = document.createElement('div');
+    divElementFirst.style.width = '18rem';
+    divElementFirst.style.margin = '0 auto';
+    divElementFirst.className = 'card text-center';
+
+    const divElementSecond = document.createElement('div');
+    divElementSecond.className = 'card-body';
+
+    const paragraph = document.createElement('p');
+    paragraph.className = 'card-text';
+    paragraph.innerHTML = 'Click the button below to play another game';
+
+    const divElementButton = document.createElement('div');
+
+    const btnYes = document.createElement('button');
+    btnYes.className = 'btn btn-success';
+    btnYes.id = 'newGameButton';
+    btnYes.innerHTML = 'New Game';
+    btnYes.addEventListener('click', function() {
+        location.reload();
+    });
+
+    document.getElementById('new').appendChild(divElementFirst).appendChild(divElementSecond).appendChild(paragraph);
+    divElementSecond.appendChild(divElementButton).appendChild(btnYes);
 }
+
+function startGame() {
+    buidlGrid();
+    setMines();
+    updateBoard();
+    checkForBomb();
+    revealInsideValue();
+}
+
 startGame();

@@ -3,3 +3,11 @@ button {
     height: 70px;
     border-color: red;
 }
+
+#newGameButton {
+    width: 150px;
+    height: 50px;
+    position: relative;
+    align-self: center;
+}
+
