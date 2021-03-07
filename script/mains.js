@@ -20,21 +20,25 @@ function buidlGrid() {
 
 /*function that positions the mines on the board*/
 function setMines() {
+    let buttons = document.querySelectorAll('button');
     let bombPositions = new Array(10);
+    let gridIds = new Array(81);
+    for (let i = 0; i < gridIds.length; ++i) {
+        gridIds[i] = Number(buttons[i].id);
+    }
     const max = 88, min = 0;
     for (let i = 0; i < bombPositions.length; ++i) {
         let possible = true;
-        while (possible) {
-            let value = Math.floor(Math.random() * (max - min + 1) + min);
-            if (bombPositions.includes(value)) {
-                continue;
+        while(possible) {
+            let bombPos = Math.floor(Math.random() * (max - min + 1) + min);
+            if (gridIds.includes(bombPos) && !bombPositions.includes(bombPos)) {
+                bombPositions[i] = bombPos;
+                possible = false;
             } else {
-                bombPositions[i] = value;
-                break;
+                possible = true;
             }
         }
     }
-    const buttons = document.querySelectorAll('button');
     buttons.forEach(function (btn) {
         let btnId = btn.getAttribute('id');
         bombPositions.forEach(function (value) {
@@ -137,6 +141,7 @@ function checkForMines(x, y) {
 }
 
 /*function that creates a final local board, updated*/
+let countMines = 0;
 function finalBoard() { 
     let myBoard = localBoard();
     for (let i = 0; i < 9; ++i) {
@@ -197,6 +202,7 @@ function updateBoard() {
                 document.getElementById(currentPos).style.fontWeight = 'bold';
                 document.getElementById(currentPos).style.color = 'darkred'
                 document.getElementById(currentPos).id = 'X';
+                ++countMines;
             } else if (myBoard[i][j] == -1) {
                 document.getElementById(currentPos).id = ' ';
             }
@@ -228,6 +234,8 @@ function revealInsideValue() {
     const score = document.getElementById('score');
     const mines = document.getElementById('board');
     const flags = document.getElementById('flags');
+    let buttons = document.querySelectorAll('button');
+    let noOfNonMine = 0;
     let scoreValue = 0;
     let flagsNumber = 10;
     flags.innerText = 'Flags left: ' + flagsNumber;
@@ -235,6 +243,7 @@ function revealInsideValue() {
         if (typeof e === 'object') {
             if (e.button === 0) {
                 if (e.target.innerText === '' && e.target.id != 'X' && e.target.style.backgroundColor == 'lightgray') {
+                    ++noOfNonMine;
                     scoreValue += Number(e.target.id);
                     score.innerText = 'Your score is: ' + scoreValue;
                     e.target.innerText = e.target.getAttribute('id');
@@ -247,6 +256,13 @@ function revealInsideValue() {
                     --flagsNumber;
                 }
                 flags.innerText = 'Flags left: ' + flagsNumber;
+            } 
+            if (noOfNonMine == 81 - countMines) {
+                buttons.forEach(function (value) {
+                    value.disabled = true;
+                });
+                alert('Congatulations, you won!');
+                newGame();
             }
         }
     });
@@ -255,7 +271,7 @@ function revealInsideValue() {
     });
 }
 
-//function that creates the possibility to play another game
+/*function that creates the possibility to play another game*/
 function newGame() {
     const divElementFirst = document.createElement('div');
     divElementFirst.style.width = '18rem';
