@@ -84,8 +84,7 @@ function checkForMines(x, y) {
         for (let j = y - 1; j <= y + 1; ++j) {
             if (i == x && j == y) {
                 continue;
-            }
-            if(i >=0 && i <= 8 && j >= 0 && j <= 8) {
+            } else if(i >=0 && i <= 8 && j >= 0 && j <= 8) {
                 if (board[i][j] == 0) {
                     ++nrOfMines;
                 }
@@ -127,29 +126,38 @@ function updateBoard() {
             }
             if (myBoard[i][j] >= 1) {
                 if (myBoard[i][j] == 1) {
+                    document.getElementById(currentPos).style.fontWeight = 'bold';
                     document.getElementById(currentPos).id = myBoard[i][j].toString();
                 } else if (myBoard[i][j] == 2) {
+                    document.getElementById(currentPos).style.fontWeight = 'bold';
                     document.getElementById(currentPos).style.color = 'green';
                     document.getElementById(currentPos).id = myBoard[i][j].toString();
                 } else if (myBoard[i][j] == 3) {
+                    document.getElementById(currentPos).style.fontWeight = 'bold';
                     document.getElementById(currentPos).style.color = 'red';
                     document.getElementById(currentPos).id = myBoard[i][j].toString();
                 } else if (myBoard[i][j] == 4) {
+                    document.getElementById(currentPos).style.fontWeight = 'bold';
                     document.getElementById(currentPos).style.color = 'violet';
                     document.getElementById(currentPos).id = myBoard[i][j].toString();
                 } else if (myBoard[i][j] == 4) {
+                    document.getElementById(currentPos).style.fontWeight = 'bold';
                     document.getElementById(currentPos).style.color = 'violet';
                     document.getElementById(currentPos).id = myBoard[i][j].toString();
                 } else if (myBoard[i][j] == 5) {
+                    document.getElementById(currentPos).style.fontWeight = 'bold';
                     document.getElementById(currentPos).style.color = 'maroon';
                     document.getElementById(currentPos).id = myBoard[i][j].toString();
                 } else if (myBoard[i][j] == 6) {
+                    document.getElementById(currentPos).style.fontWeight = 'bold';
                     document.getElementById(currentPos).style.color = 'lime';
                     document.getElementById(currentPos).id = myBoard[i][j].toString();
                 } else if (myBoard[i][j] == 7) {
+                    document.getElementById(currentPos).style.fontWeight = 'bold';
                     document.getElementById(currentPos).style.color = 'black';
                     document.getElementById(currentPos).id = myBoard[i][j].toString();
                 } else if (myBoard[i][j] == 8) {
+                    document.getElementById(currentPos).style.fontWeight = 'bold';
                     document.getElementById(currentPos).style.color = 'grey';
                     document.getElementById(currentPos).id = myBoard[i][j].toString();
                 }
