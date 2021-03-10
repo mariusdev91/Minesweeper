@@ -29,7 +29,7 @@ function setMines() {
     const max = 88, min = 0;
     for (let i = 0; i < bombPositions.length; ++i) {
         let possible = true;
-        while(possible) {
+        while (possible) {
             let bombPos = Math.floor(Math.random() * (max - min + 1) + min);
             if (gridIds.includes(bombPos) && !bombPositions.includes(bombPos)) {
                 bombPositions[i] = bombPos;
@@ -57,7 +57,7 @@ function localBoard() {
     for (let i = 0; i < board.length; ++i) {
         board[i] = new Array(9);
     }
-    
+
     for (let i = 0; i < 9; ++i) {
         for (let j = 0; j < 9; ++j) {
             if (i == 0) {
@@ -78,81 +78,36 @@ function localBoard() {
 /*function to check for mines around our position*/
 function checkForMines(x, y) {
     let board = localBoard();
-    let nrOfMines = 0, max = 8, min = 0;
+    let nrOfMines = 0;
 
-    //top neighbor
-    if (x > min) {
-        let top = board[x - 1][y];
-        if (top == 0) {
-            ++nrOfMines;
+    for (let i = x - 1; i <= x + 1; ++i) {
+        for (let j = y - 1; j <= y + 1; ++j) {
+            if (i == x && j == y) {
+                continue;
+            }
+            if(i >=0 && i <= 8 && j >= 0 && j <= 8) {
+                if (board[i][j] == 0) {
+                    ++nrOfMines;
+                }
+            }    
         }
     }
-    //left
-    if (y > min) {
-        let left = board[x][y - 1];
-        if (left == 0) {
-            ++nrOfMines;
-        }
-    }
-    //right
-    if (y < max) {
-        let right = board[x][y + 1];
-        if (right == 0) {
-            ++nrOfMines;
-        }
-    }
-    //topleft
-    if (x > min && y > min) {
-        let topLeftCorner = board[x - 1][y - 1];
-        if (topLeftCorner == 0) {
-            ++nrOfMines;
-        }
-    }
-    //topRight
-    if (x > min && y < max) {
-        let topRightCorner = board[x - 1][y + 1];
-        if (topRightCorner == 0) {
-            ++nrOfMines;
-        }
-    }
-    //bottomLeft
-    if (x < max && y > min) {
-        let bottomLeftCorner = board[x + 1][y - 1];
-        if (bottomLeftCorner == 0) {
-            ++nrOfMines;
-        }
-    }
-    //bottom
-    if (x < max) {
-        let bottom = board[x + 1][y];
-        if (bottom == 0) {
-            ++nrOfMines;
-        }
-    }
-    //bottomRight
-    if (x < max && y < max) {
-        let bottomRight = board[x + 1][y + 1];
-        if (bottomRight == 0) {
-            ++nrOfMines;
-        }
-    }
-        
     return nrOfMines;
 }
 
 /*function that creates a final local board, updated*/
 let countMines = 0;
-function finalBoard() { 
+function finalBoard() {
     let myBoard = localBoard();
     for (let i = 0; i < 9; ++i) {
         for (let j = 0; j < 9; ++j) {
             if (myBoard[i][j] == 1) {
-                if(checkForMines(i, j) != 0) {
+                if (checkForMines(i, j) != 0) {
                     myBoard[i][j] = checkForMines(i, j);
                 } else if (checkForMines(i, j) == 0) {
                     myBoard[i][j] = -1;
                 }
-           }
+            }
         }
     }
     return myBoard;
@@ -216,6 +171,7 @@ function checkForBomb() {
     let buttons = document.querySelectorAll('button');
     board.addEventListener('click', function (e) {
         if (e.target.id === 'X') {
+            stopTime();
             alert('You lost!');
             newGame();
             buttons.forEach(function (value) {
@@ -235,9 +191,7 @@ function revealInsideValue() {
     const mines = document.getElementById('board');
     const flags = document.getElementById('flags');
     let buttons = document.querySelectorAll('button');
-    let noOfNonMine = 0;
-    let scoreValue = 0;
-    let flagsNumber = 10;
+    let noOfNonMine = 0, scoreValue = 0, flagsNumber = 10;
     flags.innerText = 'Flags left: ' + flagsNumber;
     mines.addEventListener('mouseup', function (e) {
         if (typeof e === 'object') {
@@ -248,7 +202,7 @@ function revealInsideValue() {
                     score.innerText = 'Your score is: ' + scoreValue;
                     e.target.innerText = e.target.getAttribute('id');
                     e.target.style.backgroundColor = 'white';
-                } 
+                }
             } else if (e.button === 2 && flagsNumber > 0 && e.target.style.backgroundColor == 'lightgray') {
                 e.target.style.backgroundColor = 'red';
                 e.target.disabled = true;
@@ -256,17 +210,18 @@ function revealInsideValue() {
                     --flagsNumber;
                 }
                 flags.innerText = 'Flags left: ' + flagsNumber;
-            } 
+            }
             if (noOfNonMine == 81 - countMines) {
                 buttons.forEach(function (value) {
                     value.disabled = true;
                 });
+                stopTime();
                 alert('Congatulations, you won!');
                 newGame();
             }
         }
     });
-    mines.addEventListener('contextmenu', function(e) {
+    mines.addEventListener('contextmenu', function (e) {
         e.preventDefault();
     });
 }
@@ -291,12 +246,44 @@ function newGame() {
     btnYes.className = 'btn btn-success';
     btnYes.id = 'newGameButton';
     btnYes.innerHTML = 'New Game';
-    btnYes.addEventListener('click', function() {
+    btnYes.addEventListener('click', function () {
         location.reload();
     });
 
     document.getElementById('new').appendChild(divElementFirst).appendChild(divElementSecond).appendChild(paragraph);
     divElementSecond.appendChild(divElementButton).appendChild(btnYes);
+}
+
+let minutes = document.getElementById('minutes');
+let seconds = document.getElementById('seconds');
+let myTimer;
+let totalSeconds = 0;
+
+/*function that increments the minutes and the seconds */
+function time() {
+    ++totalSeconds;
+    minutes.innerHTML = modifyValue(parseInt(totalSeconds / 60));
+    seconds.innerHTML = modifyValue(totalSeconds % 60);
+}
+
+/*function to set timer*/
+function changeTime() {
+    myTimer = setInterval(time, 1000);
+}
+
+/*function that modifies the minute and seconds deppeding on the parameter taken*/
+function modifyValue(value) {
+    let valueAsString = value + "";
+    if (valueAsString.length < 2) {
+        return "0" + valueAsString;
+    } else {
+        return valueAsString;
+    }
+}
+
+/*function to stop the timer*/
+function stopTime() {
+    clearInterval(myTimer);
 }
 
 function startGame() {
@@ -305,6 +292,7 @@ function startGame() {
     updateBoard();
     checkForBomb();
     revealInsideValue();
+    changeTime();
 }
 
 startGame();
